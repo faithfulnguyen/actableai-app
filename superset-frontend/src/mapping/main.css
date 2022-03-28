@@ -1,0 +1,104 @@
+.panel {
+  margin-bottom: 2px;
+  background-color: transparent;
+  border-bottom: none;
+  box-shadow: none;
+}
+
+#mapping .panel-heading {
+  padding: 0;
+}
+
+#mapping .panel-heading .panel-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 20px;
+}
+
+#mapping .panel-heading .panel-title h4 {
+  margin-bottom: 15px;
+  font-size: 36px;
+  font-weight: 500;
+}
+
+#mapping .panel-body {
+  padding: 0;
+}
+
+#mapping .mapping-item {
+  padding: 10px;
+  background-color: white;
+  border-radius: 2px;
+}
+
+#mapping .mapping-item .panel-body>div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fa-list-ul {
+  margin-left: 10px;
+  color: #198ace;
+}
+
+.fa-chevron-right {
+  margin-left: 14px;
+  color: #198ace;
+}
+
+.fa-list-ul:hover {
+  cursor: pointer;
+}
+
+.box-table-right {
+  display: flex;
+  align-items: center;
+}
+
+.Select {
+  width: 200px;
+}
+
+.box-scroll {
+  height: 675px;
+  overflow: auto;
+}
+
+.btn-default, .btn-default:hover, .btn-default:focus {
+  padding: 8px 25px;
+  border: none;
+  background-color: transparent;
+  color: white;
+  outline: none;
+}
+
+.btn-blue, .btn-blue:hover, .btn-blue:focus {
+  height: 40px;
+  background-color: #198ace !important;
+}
+
+.btn-green, .btn-green:hover, .btn-green:focus {
+  height: 40px;
+  background-color: #32a852 !important;
+}
+
+
+.notify-success {
+  color: #333;
+  border: 1px solid #198ace54;
+  box-shadow: 0 2px 8px #198ace54;
+  border-radius: 2px;
+}
+
+.notify-error {
+  color: #333;
+  border: 1px solid #d13c3c;
+  box-shadow: 0 2px 8px #d13c3c;
+  border-radius: 2px;
+}
+
+.ml-10{
+  margin-left: 10px;
+}

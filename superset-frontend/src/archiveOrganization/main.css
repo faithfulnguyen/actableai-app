@@ -1,0 +1,31 @@
+.red-text {
+    color: red;
+}
+.pb-15 {
+    padding-bottom: 15px;
+}
+.text-25 {
+    font-size: 22px;
+}
+.border-bottom {
+    border-bottom: 1px solid #bbb;
+    width: 100%;
+    font-weight: bold;
+}
+.mb-30 {
+    margin-bottom: 30px;
+}
+.pb-20 {
+    padding-bottom: 20px;
+}
+.mt-10 {
+    margin-top: 10px;
+}
+.btn-custom {
+    font-size: 15px;
+    background-color: #6D757D;
+    color: white
+}
+.mr-10 {
+    margin-right: 10px;
+}

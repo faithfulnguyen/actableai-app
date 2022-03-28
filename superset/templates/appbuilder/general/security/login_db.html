@@ -1,0 +1,112 @@
+<!-- extend base layout -->
+{% extends "appbuilder/white.html" %}
+
+{% block content %}
+<script>
+  function getUrlParams(){
+    const params = window.location.href.split('?')[1];
+    return params ? `?${params}` : '';
+  }
+
+  function onGoogleLogin() {
+    window.gtag?.('event', 'google-sign-in', { event_category: 'User', event_label: 'sign-in' })
+    window.location.href = '/oauth/google' + getUrlParams();
+  }
+
+  function onGoogleSignUp() {
+    window.gtag?.('event', 'google-sign-up', { event_category: 'User', event_label: 'sign-up' })
+    window.location.href = '/oauth/google' + getUrlParams();
+  }
+</script>
+<div class="container-fluid login-custom">
+  <div class="container">
+    <div class="row">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="app-name"><img src="/static/assets/images/logo-blue.png" class="logo-login"
+              alt="{{ appbuilder.app_name }}"></div>
+        </div>
+        <div class="col-md-12 box-form-login">
+          <div class="col-md-6 frames-cover">
+            <img src="/static/assets/images/gif-homepage.gif" class="image-cover img-login-gif">
+          </div>
+          <div class="col-md-6 p-0">
+            {% block messages %}
+            {% include 'appbuilder/flash.html' %}
+            {% endblock %}
+            <div id="loginbox" class="mainbox">
+              <div class="">
+                <div class="panel-body login-inner">
+                  <form class="form" action="" method="post" name="login" autocomplete="off">
+                    {{form.hidden_tag()}}
+                    <div class="control-group{% if form.errors.openid is defined %} error{% endif %}">
+                      <div class="controls">
+                        <!-- <label class="control-label" for="openid">{{_("Username")}}</label> -->
+                        <div class="input-group u-mb-23-respon">
+                          {{ form.username(size = 100, class = "form-control login-input", placeholder = "Username", autocomplete = "username" )}}
+                        </div>
+                        {% for error in form.errors.get('openid', []) %}
+                        <span class="help-inline">[{{error}}]</span><br>
+                        {% endfor %}
+                        <!-- <label class="control-label" for="openid">{{_("Password")}}</label> -->
+                        <div class="input-group">
+                          {{ form.password(size = 100, class = "form-control login-input", placeholder = "Password", autocomplete = "current-password" )}}
+                        </div>
+                        {% for error in form.errors.get('openid', []) %}
+                        <span class="help-inline">[{{error}}]</span><br>
+                        {% endfor %}
+                      </div>
+                    </div>
+
+                    <div class="control-group">
+                      <div class="controls">
+                        <div>
+                          <input class="btn btn-block btn-signin btn-login-size" type="submit" value="{{_('Sign in')}}">
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                  <div class="control-group">
+                    <div class="controls">
+                      <div>
+                        {% set google_sign_in_enabled = appbuilder.app.config.get("GOOGLE_SIGNIN_FEATURE") %}
+                        {% if google_sign_in_enabled == 'true' %}
+                          <div class="google-box">
+                            <button class="btn btn-block btn-google btn-signin btn-login-size" style="margin-top: 15px;" onclick="onGoogleLogin()">
+                              <img src="/static/assets/images/icon-gg.png" alt="icon-gg" style="margin-right: 10px;">
+                              Sign in with Google
+                            </button>
+                          </div>
+                        {% endif %}
+                        {% if appbuilder.sm.auth_user_registration %}
+                          {% if google_sign_in_enabled == 'true' %}
+                            <hr style="border-color: #202CD8;" />
+                            <a href="{{appbuilder.sm.get_url_for_registeruser}}"
+                              class="btn btn-block btn-custom-register btn-login-form btn-login-size"
+                              data-toggle="tooltip" rel="tooltip"
+                              title="{{_('If you are not already a user, please register')}}">
+                              {{_('Register')}}
+                            </a>
+                            <div class="google-box">
+                              <button class="btn btn-block btn-google btn-login-form btn-login-size" onclick="onGoogleSignUp()">
+                                <img src="/static/assets/images/icon-gg.png" alt="icon-gg" style="margin-right: 10px;">
+                                Sign up with Google
+                              </button>
+                            </div>
+                          {% endif %}
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="controls forgot-password btn-login-size"><a href="/forgotpassword">Forgot password</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

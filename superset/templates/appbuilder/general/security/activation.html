@@ -1,0 +1,19 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<center>
+<h2>{{_('Welcome')}} {{first_name}} {{last_name}}</h2>
+
+<p>{{_('Congratulation! Your user account is activated you will be redirected login page after 5 second...')}}</p>
+<script>
+    $(document).ready(function () {
+        setTimeout(
+            function () {
+                window.location = window.origin + "/login";
+            },
+            5000);
+    });
+</script>
+<center>
+
+{% endblock %}

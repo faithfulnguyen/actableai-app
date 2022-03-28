@@ -1,0 +1,167 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+x-superset-build: &superset-build
+  args:
+    NPM_BUILD_CMD: build-dev
+    NPM_ACTION: install
+  context: ./
+  dockerfile: Dockerfile
+  target: dev
+x-ray: &ray
+  context: ./
+  dockerfile: ray.Dockerfile # Please use ray-cpu.Dockerfile if your device doesn't support Nvidia GPU
+
+x-superset-depends-on: &superset-depends-on
+  - ray
+  - superset-init
+
+x-superset-volumes:
+  &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+  - ./docker:/app/docker
+  - ./docker/pythonpath_dev:/app/pythonpath
+  - ./superset:/app/superset
+  - ./superset-frontend:/app/superset-frontend
+  - superset_home:/app/superset_home
+  - ./tests:/app/tests
+
+version: '3.7'
+services:
+  redis:
+    image: redis:5.0.0
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - redis:/data
+
+  ray:
+    env_file: docker/.env
+    build: *ray
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ray start --head --port=6377 --include-dashboard=true --dashboard-host=0.0.0.0 --dashboard-port=8265 --num-gpus=1
+        sleep infinity & wait
+
+    ulimits:
+      stack: -1
+    runtime: nvidia #comment this line if your system does not support for nvidia runtime
+    ports:
+      - 6377:6377
+      - 8265:8265
+      - 10001:10001
+      - 8000:8000
+
+  ray-worker:
+    env_file: docker/.env
+    build: *ray
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ray start --address=ray:6377
+        sleep infinity & wait
+    depends_on:
+      - ray
+    runtime: nvidia #comment this line if your system does not support for nvidia runtime
+
+  db:
+    env_file: docker/.env
+    image: postgres:10
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - db_home:/var/lib/postgresql/data
+
+  superset:
+    build: *superset-build
+    command:
+      [
+        'flask',
+        'run',
+        '-p',
+        '8088',
+        '--with-threads',
+        '--reload',
+        '--debugger',
+        '--host=0.0.0.0',
+      ]
+
+    env_file: docker/.env
+    restart: unless-stopped
+    ports:
+      - 8088:8088
+    depends_on: *superset-depends-on
+    volumes: *superset-volumes
+    environment:
+      - RAY_ADDRESS=ray://ray:6377
+
+  superset-init:
+    build: *superset-build
+    command: ['/app/docker/docker-init.sh']
+    env_file: docker/.env
+    depends_on:
+      - db
+      - redis
+    volumes: *superset-volumes
+
+  superset-node:
+    image: node:10-jessie
+    command:
+      [
+        'bash',
+        '-c',
+        'cd /app/superset-frontend && npm install --global webpack webpack-cli && npm install && npm run dev',
+      ]
+    env_file: docker/.env
+    depends_on: *superset-depends-on
+    volumes: *superset-volumes
+
+  superset-worker:
+    build: *superset-build
+    command:
+      [
+          'bash',
+          '-c',
+          'watchmedo auto-restart --directory=./ --pattern=*.py --recursive -- celery --app=superset.tasks.celery_app:app worker --pool prefork --concurrency 8',
+      ]
+    env_file: docker/.env
+    restart: unless-stopped
+    depends_on: *superset-depends-on
+    volumes: *superset-volumes
+
+  celery-flower:
+    build: *superset-build
+    command: ['/usr/bin/docker-bootstrap.sh', 'flower']
+    env_file: docker/.env
+    restart: unless-stopped
+    depends_on: *superset-depends-on
+    volumes: *superset-volumes
+    ports:
+      - 5555:5555
+
+volumes:
+  superset_home:
+    external: false
+  db_home:
+    external: false
+  redis:
+    external: false
+  flask_dashboard_db:
+    external: false

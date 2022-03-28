@@ -1,0 +1,117 @@
+.container-fluid {
+  height: calc(100vh - 150px); 
+}
+
+.container-fluid .custom-layout {
+  min-height: calc(100vh - 104px);
+}
+
+.container-fluid #app {
+  min-height: calc(100vh - 144px);
+}
+/**/
+#predict-control, #predict-container {
+  background-color: #fff;
+  height: 100%;
+}
+
+.panel {
+  margin-bottom: 0;
+  box-shadow: none;
+}
+
+.btn-default, .btn-default:hover, .btn-default:focus {
+  width: 100%;
+  padding: 8px 20px;
+  border: none;
+  background-color: transparent;
+  color: white;
+  outline: none;
+}
+
+.btn-warning, .btn-warning:hover, .btn-warning:focus {
+  width: 100%;
+  padding: 8px 20px;
+  border: none;
+  color: white;
+  outline: none;
+}
+
+.btn-green, .btn-green:hover, .btn-green:focus {
+  background-color: #43b734 !important;
+}
+
+.btn-blue, .btn-blue:hover, .btn-blue:focus {
+  background-color: #198ace !important;
+}
+
+.mt-15 {
+  margin-top: 15px !important;
+}
+
+input.form-control {
+  height: 30px;
+}
+
+img.loading {
+  width: 40px;
+  height: auto;
+  top: 50%;
+}
+
+button#addBtn {
+  width: 80px;
+}
+
+
+.table-content {
+  width: 100%;
+  max-height: calc(100% - 67px);
+  overflow: auto;
+}
+
+.table-content table thead th {
+  /*begin css fixed header*/
+  position: sticky;
+  top: 0;
+  /*end css fixed header*/
+  border: 1px solid #ddd;
+  height: 38px;
+  background: #34495e;
+  padding: 4px;
+  font-weight: bold;
+  color: white;
+}
+
+
+.table-content table tr td {
+  border: 1px solid #ddd;
+  height: 30px;
+  background: white;
+  padding: 4px;
+}
+
+.table-content table tr.row-add td {
+  padding: 2px;
+}
+
+.table-content table tr td input.form-control {
+  background: white!important;
+  border-radius: 2px;
+  padding: 2px;
+  border-color: #ddd!important;
+}
+
+.table-content table tr td input.form-control:hover {
+  border-color: #ddd;
+}
+
+.table-content table tr td.prediction{
+  color: red;
+  font-weight: bold;
+}
+
+.table-content table tr.row-add td input.form-control {
+    color: green;
+    font-weight: bold;
+}

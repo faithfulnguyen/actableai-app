@@ -1,0 +1,221 @@
+{% import 'appbuilder/general/lib.html' as lib %}
+<script>
+  function repoFormatResult(repo) {
+    return '<p>' + repo.email + '</p>';
+  }
+
+  function repoFormatSelection(repo) {
+    return repo.email;
+  }
+
+  $(document).ready(function () {
+    $('.form2').submit(function () {
+      // reset all select options
+      let selectedUserIds = $('#owners-selector').val().split(',');
+      selectedUserIds = selectedUserIds.filter((item) => item.length > 0);
+      if (selectedUserIds.length === 0) {
+        $('select#owners').remove();
+      } else {
+        $('select#owners').find('option').remove();
+        selectedUserIds.forEach((item) => {
+          $('select#owners').append(
+            `<option value="${item}" selected>anything</option>`
+          );
+        });
+      }
+      return true;
+    });
+
+    $('#owners-selector').select2({
+      multiple: true,
+      placeholder: 'Search for user',
+      minimumInputLength: 3,
+      ajax: {
+        // instead of writing the function to execute the request we use Select2's convenient helper
+        url: '/superset/search_user',
+        dataType: 'json',
+        quietMillis: 3000,
+        data: function (term, page) {
+          return {
+            email: term, // search term
+          };
+        },
+        results: function (data, page) {
+          // parse the results into the format expected by Select2.
+          // since we are using custom formatting functions we do not need to alter the remote JSON data
+          return { results: data.id ? [data] : [] };
+        },
+        cache: true,
+      },
+      initSelection: function (element, callback) {
+        // the input tag has a value attribute preloaded that points to a preselected repository's id
+        // this function resolves that id attribute to an object that select2 can render
+        // using its formatResult renderer - that way the repository name is shown preselected
+        let initEmails = $(element).val();
+        $(element).val('');
+        initEmails = initEmails
+          .replaceAll(']', '')
+          .replaceAll('[', '')
+          .split(',');
+
+        const promises = [];
+        initEmails
+          .filter((item) => item.length > 0)
+          .forEach((item) => {
+            promises.push($.ajax('/superset/search_user?email=' + encodeURIComponent(item.trim()), {
+              dataType: 'json',
+            }));
+          });
+        Promise.all(promises).then(responseList => {
+          callback(responseList)
+        })
+      },
+      formatResult: repoFormatResult, // omitted for brevity, see the source of this page
+      formatSelection: repoFormatSelection, // omitted for brevity, see the source of this page
+      dropdownCssClass: 'bigdrop', // apply css that makes the dropdown taller
+      escapeMarkup: function (m) {
+        return m;
+      }, // we do not want to escape markup since we are displaying html in results
+    });
+
+    var db = $("#database");
+    var schema = $("#schema");
+
+    var uploaded = $("#is_uploaded");
+
+    var is_uploaded = uploaded.val();
+
+    // this element is a text input
+    // copy it here so it can be reused later
+    var any_schema_is_allowed = schema.val();
+
+    db.change(function(){
+      update_schemas_allowed(db.val());
+    });
+
+    $('#model_form').find("#is_uploaded").remove();
+    $('.hidden').find("#is_uploaded").remove();
+    if(is_uploaded) {
+      db.attr("disabled", "disabled");
+      $("#schema").replaceWith('<input class="form-control" type="text" id="schema" name="schema" value="'+any_schema_is_allowed+'" readonly />')
+      db.parent().append('<input type="hidden" name="database" value="'+db.val()+'">')
+    }
+    else {
+      update_schemas_allowed(db.val());
+    }
+
+    function update_schemas_allowed(db_id) {
+        $.ajax({
+          method: "GET",
+          url: "/superset/schemas/"+db_id+"/false/",
+          dataType: 'json',
+          contentType: "application/json; charset=utf-8"
+        }).done(function(data) {
+          change_schema_field_in_formview(data)
+        }).fail(function(error) {
+          var errorMsg = error.responseJSON.error;
+          alert("ERROR: " + errorMsg);
+        });
+    }
+
+    function change_schema_field_in_formview(schemas_allowed){
+        
+        if (schemas_allowed && schemas_allowed.schemas.length > 0) {
+            var dropdown_schema_lists = '<select id="schema" name="schema" >';
+            schemas = schemas_allowed.schemas;
+            if(!schemas.includes(any_schema_is_allowed)) {
+              schemas.push(any_schema_is_allowed)
+            }
+            schemas_allowed.schemas.forEach(function(schema_allowed) {
+              var selected = schema_allowed == any_schema_is_allowed?"selected":'';
+              dropdown_schema_lists += ('<option value="' + schema_allowed + '" '+selected+'>' + schema_allowed + '</option>');
+            });
+            dropdown_schema_lists += '</select>';
+            $("#schema").replaceWith(dropdown_schema_lists);
+        } else {
+            var dropdown_schema_lists = '<select id="schema" name="schema" required  >';
+            dropdown_schema_lists += ('<option value="' + any_schema_is_allowed + '">' + any_schema_is_allowed + '</option>');
+            dropdown_schema_lists += '</select>';
+            $("#schema").replaceWith(dropdown_schema_lists)
+        }
+       
+    }
+  });
+</script>
+
+{% if form_action is defined %}
+<form
+  id="model_form"
+  action="{{form_action}}"
+  method="post"
+  enctype="multipart/form-data"
+>
+{% else %}
+<form
+  id="model_form"
+  class="form2 edit-dataset"
+  action=""
+  method="post"
+  enctype="multipart/form-data"
+>
+{% endif %} 
+  {{form.hidden_tag()}} 
+  {% if fieldsets %} 
+    {% for fieldset_item in fieldsets %} 
+      {% if fieldset_item[1].get('expanded') == None %} 
+        {% set expanded = True %} 
+      {% else %} 
+        {% set expanded = fieldset_item[1].get('expanded') %} 
+      {% endif %} 
+      {% call lib.accordion_tag(loop.index,fieldset_item[0], expanded) %}
+        <div class="table-form d-flex">
+          {% for item in fieldset_item[1].get('fields') %} {% if item not in
+          exclude_cols %}
+          {{ lib.render_field(form[item]) }} {% endif %} {% endfor %}
+        </div>
+      {% endcall %} 
+    {% endfor %} 
+  {% else %}
+    <div class="table-form d-flex">
+      {% for col in include_cols %} {% set field = form[col] %} {% if field.name
+      not in exclude_cols %} {% if field.name == "owners" %}
+      <div class="form-group col-w-50 {{ field.render_kw.display }}">
+        <label for="{{field.id}}" control-label>
+          {{ field.label.text }} {% if field.flags.required %}
+          <strong>&#42;</strong>
+          {% endif %}
+        </label>
+
+        <input
+          type="hidden"
+          id="owners-selector"
+          name="owners-selector"
+          value="{{field.data}}"
+          class="bigdrop"
+          style="width: 100%"
+        />
+        <select
+          class="my_select2 form-control"
+          name="owners"
+          id="owners"
+          multiple="true"
+          style="display: none"
+        ></select>
+
+        <span class="help-block">{{ field.description }}</span>
+        {% if field.errors %}
+        <div class="alert alert-danger">
+          {% for error in field.errors %} {{ _(error) }} {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% elif field.name == "example_dataset" %}
+        {% if field.render_kw.show %}
+          {{ lib.render_field(field) }}
+        {%endif %}
+      {% else %} {{ lib.render_field(field) }} {% endif %} {% endif %} {% endfor
+      %}
+    </div>
+    {% endif %} {{ lib.render_form_controls() }}
+  </form>
+</form>

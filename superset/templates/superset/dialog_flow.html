@@ -1,0 +1,27 @@
+{% block head_meta %}{% endblock %}
+{% block head_css %}
+<link rel="icon" type="image/png" href="/static/assets/images/favicon.png">
+<link rel="stylesheet" type="text/css" href="/static/appbuilder/css/flags/flags16.css"/>
+<link rel="stylesheet" type="text/css" href="/static/appbuilder/css/font-awesome.min.css">
+{% from 'superset/partials/asset_bundle.html' import css_bundle, js_bundle with context %}
+{{ css_bundle("theme") }}
+{% if entry %}
+{{ css_bundle(entry) }}
+{% endif %}
+
+{% endblock %}
+
+{% extends "appbuilder/white.html" %}
+
+{% block content %}
+<form class="form" action="" method="post" name="login" autocomplete="off">
+    {{form.hidden_tag()}}
+    <div id="chat" data-bootstrap="{{ bootstrap_data }}">
+        {% block tail_js %}
+        {% if entry %}
+        {{ js_bundle(entry) }}
+        {% endif %}
+        {% endblock %}
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,144 @@
+{#
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+#}
+{% set menu = appbuilder.menu %}
+{% set languages = appbuilder.languages %}
+{% set WARNING_MSG = appbuilder.app.config['WARNING_MSG'] %}
+{% set app_icon_width = appbuilder.app.config['APP_ICON_WIDTH'] %}
+{% set logo_target_path = appbuilder.app.config['LOGO_TARGET_PATH'] or '/profile/{}/'.format(current_user.username) %}
+{% set root_path = logo_target_path if not logo_target_path.startswith('/') else '/superset' + logo_target_path if current_user.username is defined else '#'  %}
+{% set user_profile = '/superset/profile/{}/'.format(current_user.username) %}
+{% include 'appbuilder/archive-org.html' %}
+{% include 'appbuilder/share-modal.html' %}
+{% include 'appbuilder/resources-modal.html' %}
+
+{% if environment == 'production' %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75240222-1"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments);}
+      gtag("js", new Date());
+  </script>
+  {% if current_user.email is defined  %}
+  <script>
+      gtag("config", "UA-75240222-1", { user_id: "{{current_user.email}}" });
+  </script>
+  {% else %}
+  <script>
+      gtag("config", "UA-75240222-1");
+  </script>
+  {% endif %}
+{% endif %}
+
+{% if csrf_token %}
+<script>
+  window.csrf_token = "{{csrf_token()}}";
+</script>
+{% endif %}
+
+
+<div class="navbar navbar-static-top {{menu.extra_classes}} mt-0" role="navigation">
+  <div class="navbar_v1">
+    <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="logo">
+            <a class="navbar-logo" href="/"><img src="/static/assets/images/logo.png" class="logo" atl="{{ appbuilder.app_name }}"></a>
+            </li>
+            {% if WARNING_MSG %}
+            <li class="alert alert-danger">
+                {{ WARNING_MSG | safe }}
+            </li>
+            {% endif %}
+            {% include 'appbuilder/menu.html' %}
+        </ul>
+    </div>
+    <div class="navbar_right">
+      <li class="dropdown">
+        <img src="/static/assets/images/icon_user.svg"/>
+        <a
+          id="navbar-user-info"
+          class="dropdown-toggle"
+          data-toggle="dropdown"
+          data-id="{{g.user.get_id()}}"
+          href="javascript:void(0)"
+        >
+        {% if current_user.username is defined  %}
+          <div class="navbarAccountName">
+            {{g.user.get_full_name()}}
+          </div>
+          <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 1L7 7L1 1" stroke="white" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        {% else %}
+          <div class="loginButton" onclick="login()">
+            Login
+          </div>
+        {% endif %}
+        </a>
+        {% if current_user.username is defined  %}
+          <ul class="dropdown-menu">
+              {% set settings = menu.find('Settings') %}
+              <li class="has-submenu">
+                <a href="javascript:void(0)" class="setting-option">
+                  <span>{{_("Settings")}}</span>
+                  <i class="fa fa-angle-right" aria-hidden="true"></i>
+                </a> 
+                <ul class="user-submenu">
+                  {% if settings.childs %}
+                    {% for child in settings.childs %}
+                      {% if child | is_menu_visible %}
+                        {% if child.label == 'Archive Organization' %}
+                          <li>
+                            <a href="javascript:void(0)" id="show-modal-archive-org">{{ child.label }}</a>
+                          </li>
+                        {% else %}
+                          <li>
+                            <a href={{ child.get_url() }}>{{ child.label }}</a>
+                          </li>
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                </ul>
+              </li>
+              <li>
+                <a href="{{appbuilder.get_url_for_logout}}" class="logout-option">
+                  <span>{{_("Logout")}}</span>
+                </a>
+              </li>
+          </ul>
+        {% endif %}
+      </li>       
+      <!-- <h6>{{ current_user.roles }}</h6> -->
+    </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('.user-submenu').on('mouseenter', function () {
+      var parent = $(this).parent().addClass('submenu-active')
+    })
+    $('.user-submenu').on('mouseleave', function () {
+      var parent = $(this).parent().removeClass('submenu-active')
+    })
+
+    $('.logout-option').on('click', function () {
+      window.localStorage.clear();
+    })
+  });
+</script>

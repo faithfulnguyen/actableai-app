@@ -1,0 +1,303 @@
+<li>
+    <a class="top-menu" href="/#data" id="top-menu-data-button">
+        <span class="parent">Data</span>
+    </a>
+</li>
+<li>
+    <a class="top-menu" href="/#analytics" id="top-menu-analytics-button">
+        <span class="parent">Analytics</span>
+    </a>
+</li>
+<li>
+    <a class="top-menu" href="/#dashboards" id="top-menu-dashboards-button">
+        <span class="parent">Dashboards</span>
+    </a>
+</li>
+<li>
+    <a class="top-menu" id="resources-modal-button">
+        <span class="parent">Resources</span>
+    </a>
+</li>
+<li>
+    <a class="top-menu" id="share-modal-button">
+        <span class="parent">Share</span>
+    </a>
+</li>
+
+{% macro menu_item(item) %}
+    <a tabindex="-1" href="{{item.get_url()}}">
+    {{_(item.label)}}</a>
+{% endmacro %}
+
+{% set menu_custom = [] %}
+{% set menu_order = ['Sources','Analytics','Docs','Feedback'] %}
+
+{% if appbuilder.app.config['DASHBOARD_FEATURE'] == 'true' %}
+    {% if appbuilder.app.config['USECASES_FEATURE'] == 'true' %}
+        {% set menu_order = ['Sources','Analytics','Dashboards','UseCases','Docs','Feedback'] %}
+    {% else %}
+        {% set menu_order = ['Sources','Analytics','Dashboards','Docs','Feedback'] %}
+    {% endif %}
+{% else %}
+    {% if appbuilder.app.config['USECASES_FEATURE'] == 'true' %}
+        {% set menu_order = ['Sources','Analytics','UseCases','Docs','Feedback'] %}
+    {% else %}
+        {% set menu_order = ['Sources','Analytics','Docs','Feedback'] %}
+    {% endif %}
+{% endif %}
+
+{% for item in menu_order %}
+  {% set _ = menu_custom.append(menu.find(item)) %}
+{% endfor %}
+
+{% from 'superset/partials/asset_bundle.html' import js_bundle with context %}
+
+<!-- {% for item1 in menu_custom %}
+    {% if item1 | is_menu_visible and item1.name != 'Security' and item1.name != '1' %}
+        {% if item1.label == 'Docs' %}
+            {% if item1.childs %}
+                <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+                    <span class="actable-icons"><img src="/static/assets/images/docs.svg" alt="*"></span>
+                <span class="parent">{{_(item1.label)}}</span></a>
+                <ul class="dropdown-menu">
+                    {% for item2 in item1.childs %}
+                    {% if item2 %}
+                    {% if item2.name == '-' %}
+                    {% if not loop.last %}
+                    <li class="divider"></li>
+                    {% endif %}
+                    {% elif item2 | is_menu_visible %}
+                    {% if item2.childs %}
+                    <li class="has-submenu dropdown-submenu">
+                        <a tabindex="-1" href="javascript:void(0)">
+                            <span>{{ item2.label }}</span>
+                            <i class="fa fa-angle-right navbar-arrow" aria-hidden="true"></i>
+                        </a>
+                        <ul class="user-submenu navbar-submenu dropdown-menu">
+                            {% for item3 in item2.childs %}
+                            {% if item2 %}
+                            <li tabindex="-1">
+                                <a href="{{ item3.get_url()}}" target="_blank">
+                                    <span>{{ item3.name }}</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{{item2.get_url()}}" target="_blank">
+                            <span>{{ item2.label }}</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </ul></li>
+            {% else %}
+                <li>
+                    <a tabindex="-1" href="{{ item1.get_url() }}" data-original-title="" title="">
+                    <span class="parent">{{ item1.label }}</span></a>
+                </li>
+            {% endif %}
+        {% elif item1.label == 'UseCases' %}
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+                    <span class="actable-icons"><img src="/static/assets/images/{{_(item1.icon)}}" alt="*"></span>
+                <span class="parent">Use Cases</span></a>
+                <ul class="dropdown-menu" id="js-add-useCases" style="width: 260px;">
+                    
+                </ul>
+            </li>
+        {% else %}
+            {% if item1.childs %}
+                <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+                <span class="actable-icons"><img src="/static/assets/images/{{_(item1.icon)}}" alt="*"></span>
+                <span class="parent">{{_(item1.label)}}</span></a>
+                <ul class="dropdown-menu">
+                    {% for item2 in item1.childs %}
+                    {% if item2 %}
+                    {% if item2.name == '-' %}
+                    {% if not loop.last %}
+                    <li class="divider"></li>
+                    {% endif %}
+                    {% elif item2 | is_menu_visible %}
+                    {% if item2.childs %}
+                    <li class="has-submenu dropdown-submenu">
+                        <a tabindex="-1" href="javascript:void(0)">
+                            <span>{{ item2.label }}</span>
+                            <i class="fa fa-angle-right navbar-arrow" aria-hidden="true"></i>
+                        </a>
+                        <ul class="user-submenu navbar-submenu dropdown-menu">
+                            {% for item3 in item2.childs %}
+                            {% if item2 %}
+                            <li tabindex="-1">
+                                <a href="{{ item3.get_url()}}">
+                                    <span>{{ item3.name }}</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{{item2.get_url()}}">
+                            <span>{{ item2.label }}</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </ul></li>
+            {% else %}
+                {% if item1.label == 'Feedback' %}
+                  <li>
+                    <a href="javascript:void(0)" onclick="_urq.push(['Feedback_Open']);">
+                        <span class="actable-icons"><img src="/static/assets/images/{{ item1.icon }}" alt="*"></span>
+                        <span>Feedback</span>
+                      </a>
+                  </li>
+                {% else %}
+                  <li>
+                    <a tabindex="-1" href="{{ item1.get_url() }}" data-original-title="" title="">
+                        <span class="actable-icons"><img src="/static/assets/images/{{ item1.icon }}" alt="*"></span>
+                        <span class="parent">{{ item1.label }}</span></a>
+                  </li>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endfor %} -->
+
+{% block tail_js %}
+    {{ js_bundle("menuUseCases") }}
+{% endblock %}
+
+<script src="/static/appbuilder/js/jquery-latest.js"></script>
+<script>
+    //javascript user report feedback
+    var _urq = _urq || [];
+    _urq.push(['initSite', 'd00aa9ff-f6b5-412f-ac05-dbff5bde3bef']);
+    (function() {
+    var ur = document.createElement('script'); ur.type = 'text/javascript'; ur.async = true;
+    ur.src = ('https:' == document.location.protocol ? 'https://cdn.userreport.com/userreport.js' : 'http://cdn.userreport.com/userreport.js');
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ur, s);
+    })();
+
+    $(document).ready(function () {
+        $('head').append('<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />');
+
+        $('.nav-item').on("click", function() {
+           var selectedExpanded = $(this).find('a.nav-link').attr("aria-expanded");
+           if (selectedExpanded == "true"){
+                $(this).find('.pageSubmenu').children('path').attr("d", "M10.968 23V9l12.762 7-12.762 7z");
+           } else {
+               $(this).find('.pageSubmenu').children('path').attr("d", "M24 11.305l-7.997 11.39L8 11.305z");
+           }
+        });
+
+        $.each($('.nav-item'), function(){
+         if ($(this).hasClass('menu-active')){
+            $(this).find('.collapse').addClass('in');
+            $(this).find('.pageSubmenu').children('path').attr("d", "M24 11.305l-7.997 11.39L8 11.305z");
+          }
+        });
+
+
+        // Highlight menu
+        $('.top-menu').closest('li').removeClass('menu-active');
+        $('.top-menu').on('click', function(){
+            $('.top-menu').closest('li').removeClass('menu-active');
+            $(this).parent().addClass("menu-active");
+        })
+        if(window.location.hash)  {
+            var hash = (window.location.hash || '#').substring(1);
+            $('#'+hash).parent().addClass("menu-active");
+        }
+        else if(window.location.pathname == "/") {
+            $('#top-menu-data-button').parent().addClass("menu-active");
+        }
+    });
+
+    $(document).ready(function(){
+        $('#hideshow .name').on('click', function(event) {
+            $('#hideshow').hide();
+            $('.chat-content').height(500);
+            $('.chat-box').addClass('active');
+            $('.chat-panel').addClass('active');
+            $('#hidebutton').show();
+        });
+
+        $('#hidebutton').on('click', function(event) {
+            $(this).hide();
+            $('.chat-content').height(0);
+            $('.chat-box').removeClass('active');
+            $('.chat-panel').removeClass('active');
+            $('#hideshow').show();
+        });
+
+        $("#show-modal-archive-org").on('click', function(){
+          $("#modal-archive-org").modal('show')
+        })
+
+        $("#share-modal-button").on('click', function(){
+          $("#share-modal").modal('show');
+        })
+
+        $("#resources-modal-button").on('click', function(){
+          $("#resources-modal").modal('show');
+        })
+    });
+
+
+
+    const pathName = window.location.pathname;
+    let element = $(`.navbar-collapse a[href='${pathName}']`);
+    if (!element.length) {
+        const link = (location.pathname+location.search).substr(0);
+        element = $(`.navbar-collapse a[href='${link}']`);
+    }
+
+    if (!element.length) {
+        let slug = pathName.match(/\/(\w+)\//)[1];
+        if (slug === 'superset') {
+            var slug2 = '';
+            if (pathName.match(/\/superset\/(\w+)\//) !== null ){
+                slug2 = pathName.match(/\/superset\/(\w+)\//)[1];
+            }
+            if (slug2 === 'explore') {
+                slug = 'chart';
+            }
+            if (slug2 === 'dashboard') {
+                slug = 'dashboard';
+            }
+            if (slug2 === 'profile') {
+                slug = 'profile';
+            } else {
+                slug ='';
+            }
+        }
+
+        if (slug === 'users') {
+            slug2 = pathName.match(/\/users\/(\w+)/)[1];
+            array = ['add', 'edit'];
+            if (array.includes(slug2)) {
+                slug = 'users/list/';
+            }
+        }
+
+        const userArray = ['resetmypassword', 'userinfoeditview'];
+        if (userArray.includes(slug)) {
+            slug = 'users/userinfo/';
+        }
+        element = $(`.menu-left a[href*='${slug}']`);
+    }
+
+    element.parents('li').addClass('menu-active');
+</script>

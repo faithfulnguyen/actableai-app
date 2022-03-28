@@ -1,0 +1,471 @@
+{% macro render_additional_links(additional_links, pk) %}
+{% if additional_links %}
+{% for item in additional_links %}
+<a href="{{item.href}}?pk={{pk}}" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon"></span>
+    {{_(item.label)}}</a>
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+{% macro render_action_links(actions, pk, modelview_name) %}
+{% set actions = actions | get_actions_on_show(modelview_name) %}
+{% for key in actions %}
+{%  set action = actions.get(key) %}
+
+{% set url = url_for(modelview_name + '.action', name = action.name, pk = pk) %}
+<a href="javascript:void(0)" class="btn btn-sm btn-primary"
+    onclick="var a = new AdminActions(); return a.execute_single('{{url}}','{{action.confirmation}}');">
+    <i class="fa {{action.icon}}"></i>
+    {{_(action.text)}}
+</a>
+{% endfor %}
+{% endmacro %}
+
+{% macro action_form(actions, modelview_name) %}
+{% if actions %}
+{% set url = url_for(modelview_name + '.action_post') %}
+<form id="action_form" action="{{ url }}" method="POST" style="display: none">
+    {% if csrf_token %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {% endif %}
+    <input type="hidden" id="action" name="action" />
+</form>
+{% endif %}
+{% endmacro %}
+
+{% macro render_actions(actions, modelview_name) %}
+{% if actions %}
+<div class="btn-group" style="margin-right: 30px;">
+    <button id="btn-action" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" disabled>
+        <span style="width: 94px;">{{_('Actions')}}</span><span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+        {% for action_key in actions %}
+        {% set action = actions.get(action_key) %}
+        <li>
+            <a href="javascript:void(0)" class="{{action.name}}_menu_item">
+                <i class="fa {{action.icon}}"></i>
+                {{ _(action.text) }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            {% for action_key in actions %}
+            {% set action = actions.get(action_key) %}
+            $('.{{action.name}}_menu_item').on('click', function () {
+                return modelActions.execute_multiple('{{action.name}}', '{{action.confirmation}}');
+            })
+            {% endfor %}
+            $( ".action_check_all, .action_check" ).click(function() {
+                var count = $('input.action_check:checked').length;
+                if(count > 0){
+                    $("#btn-action").attr("disabled", false);
+                }else{
+                    $("#btn-action").attr("disabled", true);
+                }
+            });
+        });
+    </script>
+</div>
+{% endif %}
+{% endmacro %}
+
+
+{% macro render_set_page_size(page, page_size, count, modelview_name) %}
+{% if not page %} {% set page = 0 %} {% endif %}
+{% set pages = ((count / page_size)|round(0,'ceil')|int)%}
+<div class="btn-group">
+    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+        {{_('Page size')}}<span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+        {% for sel_page_size in range(25,125,25) %}
+        {% if page*sel_page_size <= count %}
+        {% if sel_page_size == page_size %}
+        <li class="active"><a href="{{sel_page_size | link_page_size(modelview_name) }}">{{sel_page_size}}</a></li>
+        {% else %}
+        <li><a href="{{sel_page_size | link_page_size(modelview_name) }}">{{sel_page_size}}</a></li>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endmacro %}
+
+{% macro render_dropdown_orderby(order_columns, label_columns, modelview_name) %}
+<div class="btn-group">
+    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+        {{_('Order by')}}<span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+        {% for item in order_columns %}
+        {% set res = item | get_link_order(modelview_name) %}
+        {% if res == 2 %}
+        <li class="active">
+            <a href={{ item | link_order(modelview_name) }}>{{label_columns.get(item)}}
+                <i class="fa fa-fw fa-chevron-up"></i></a>
+        </li>
+        {% elif res == 1 %}
+        <li class="active">
+            <a href={{ item | link_order(modelview_name) }}>{{label_columns.get(item)}}
+                <i class="fa fa-fw fa-chevron-down"></i></a>
+        </li>
+        {% else %}
+        <li>
+            <a href={{ item | link_order(modelview_name) }}>{{label_columns.get(item)}}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endmacro %}
+
+
+{% macro render_pagination(page, page_size, count, modelview_name) %}
+
+{% if not page %} {% set page = 0 %} {% endif %}
+{% set pages = ((count / page_size)|round(0,'ceil')|int)%}
+<ul class="pagination pagination-sm" style="display:inherit;">
+
+    {% set init_page = 0 %}
+    {% set min = page - 3 %}
+    {% set max = page + 3 + 1 %}
+
+    {% if min < 0 %}
+    {% set max = max - min %}
+    {% endif %}
+    {% if max >= pages %}
+    {% set min = min - max + pages %}
+    {% endif %}
+
+    {% if min < 0 %}
+    {% set min = 0 %}
+    {% endif %}
+    {% if max >= pages %}
+    {% set max = pages %}
+    {% endif %}
+
+    {% if min > 0 %}
+    <li>
+        <a href="{{ init_page | link_page(modelview_name) }}">&laquo;</a>
+    </li>
+    {% else %}
+    <li class="disabled">
+        <a href="javascript:void(0)">&laquo;</a>
+    </li>
+    {% endif %}
+    {% if page > 0 %}
+    <li>
+        <a href="{{ (page - 1) | link_page(modelview_name) }}">&lt;</a>
+    </li>
+    {% else %}
+    <li class="disabled">
+        <a href="javascript:void(0)">&lt;</a>
+    </li>
+    {% endif %}
+
+    {% for p in range(min, max) %}
+    {% if page == p %}
+    <li class="active">
+        <a href="javascript:void(0)">{{ (p + 1) }}</a>
+    </li>
+    {% else %}
+    <li>
+        <a href="{{ p | link_page(modelview_name) }}">{{ (p +1) }}</a>
+    </li>
+    {% endif %}
+    {% endfor %}
+
+    {% if page + 1 < pages %}
+    <li>
+        <a href="{{ (page + 1) | link_page(modelview_name) }}">&gt;</a>
+    </li>
+    {% else %}
+    <li class="disabled">
+        <a href="javascript:void(0)">&gt;</a>
+    </li>
+    {% endif %}
+    {% if max < pages %}
+    <li>
+        <a href="{{ (pages - 1) | link_page(modelview_name) }}">&raquo;</a>
+    </li>
+    {% else %}
+    <li class="disabled">
+        <a href="javascript:void(0)">&raquo;</a>
+    </li>
+    {% endif %}
+</ul>
+{% endmacro %}
+
+
+{% macro render_field(field) %}
+{% if field.id != 'csrf_token' %}
+    {% if field.type == 'HiddenField' %}
+        <div class="hidden">{{ field }}</div>
+    {% else %}
+    <div class="form-group {{'col-md-4' if field.id == 'database_name' else 'col-w-50'}} {{ field.render_kw.display }}">
+        <label for="{{field.id}}" control-label>
+            {{ field.label.text }}
+            {% if field.flags.required %}
+            <strong>&#42;</strong>
+            {% endif %}
+        </label>
+        {{ field(**kwargs)|safe }}
+        {% if "SelectField" in field.type %}
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="
+                float: right;
+                position: relative;
+                right: 15px;
+                top: -42px;
+            ">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M7.05719 11.0572C7.57789 10.5365 8.42211 10.5365 8.94281 11.0572L16 18.1144L23.0572 11.0572C23.5779 10.5365 24.4221 10.5365 24.9428 11.0572C25.4635 11.5779 25.4635 12.4221 24.9428 12.9428L16.9428 20.9428C16.4221 21.4635 15.5779 21.4635 15.0572 20.9428L7.05719 12.9428C6.53649 12.4221 6.53649 11.5779 7.05719 11.0572Z" fill="#081721"></path>
+            </svg>
+        {% endif %}
+        <span class="help-block">{{ field.description }}</span>
+        {% if field.errors %}
+        <div class="alert alert-danger">
+            {% for error in field.errors %}
+            {{ _(error) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endif %}
+{% endmacro %}
+
+{% macro render_connection(field) %}
+<div class="col-md-{{2 if field.id=='sqlalchemy_uri' else 4}}">
+    <label for="{{field.id}}" control-label>
+        {{ field.label.text }}
+        {% if field.flags.required %}
+        <strong>&#42;</strong>
+        {% endif %}
+    </label>
+</div>
+<div class="col-md-8">
+    {% if field.name in ['db_driver'] %}
+        {% 
+            set option_driver = [
+                { 'value': '' , 'name': '' },
+                { 'value': 'redshift+psycopg2://' , 'name': 'Amazon Redshift' },
+                { 'value': 'hive://' , 'name': 'Apache Hive' },
+                { 'value': 'hana://' , 'name': 'Hana' },
+                { 'value': 'mysql://', 'name': 'MySQL' },
+                { 'value': 'oracle://', 'name': 'Oracle' },
+                { 'value': 'postgresql://' , 'name': 'PostgreSQL' },
+                { 'value': 'mssql+pymssql://', 'name': 'SQL Server' },
+                { 'value': 'teradata://' , 'name': 'Teradata' },
+                { 'value': 'others', 'name': 'Others' },
+            ]
+        %}
+        <select id={{field.id}} name="{{field.id}}" class="form-control" {{'required' if field.flags.required}}>
+            {% for item in option_driver %}
+            <option value="{{item.value}}" {{'selected' if item.value == field.data else ''}}>{{item.name}}</option>
+            {% endfor %}
+        </select>
+    {% else %}
+        {{ field(**kwargs)|safe }}
+    {% endif %}
+    <span class="help-block">{{ field.description }}</span>
+    {% if field.errors %}
+    <div class="alert alert-danger">
+        {% for error in field.errors %}
+        {{ _(error) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_showpass(field) %}
+<div class="col-md-6 p-0">
+    <div class="col-md-4">
+        <label for="db_password" control-label>
+            Password
+            <strong>&#42;</strong>
+        </label>
+    </div>
+    <div class="col-md-8">
+        <input id="db_password" type="password" class="form-control" required value="{{'X'*10 if field.data != None else ''}}" />
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_hidden_field(field) %}
+{% if field.id != 'csrf_token' %}
+    {% if field.type == 'HiddenField' %}
+        <div class="hidden">{{ field }}</div>
+    {% else %}
+        {% if field.type == 'TextAreaField' %}
+            <div class="col-w-100 hidden">
+                <div class="col-md-1">
+        {% elif field.type == 'BooleanField' %}
+        <div class="col-w-50 hidden">
+        {% else %}
+            <div class="col-w-50 hidden">
+                <div class="col-md-2">
+        {% endif %}
+            <label for="{{field.id}}" control-label>
+                {{ field.label.text }}
+                {% if field.flags.required %}
+                <strong>&#42;</strong>
+                {% endif %}
+            </label>
+        {% if field.type != 'BooleanField' %}
+            </div>
+        {% endif %}
+        {% if field.type == 'TextAreaField' %}
+            <div class="col-md-11">
+        {% elif field.type == 'BooleanField' %}
+        {% else %}
+            <div class="col-md-10">
+        {% endif %}
+            {{ field(**kwargs)|safe }}
+            <span class="help-block">{{ field.description }}</span>
+            {% if field.errors %}
+            <div class="alert alert-danger">
+                {% for error in field.errors %}
+                {{ _(error) }}
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% if field.type != 'BooleanField' %}
+            </div>
+        {% endif %}
+        </div>
+    {% endif %}
+{% endif %}
+{% endmacro %}
+
+{% macro render_field_search(field) %}
+{% if field.id != 'csrf_token' %}
+<div class="control-label">
+    <th class="col-lg-2">{{ field.label.text }}</th>
+</div>
+<div class="controls">
+    <td>{{ field(name_='_flt_' + field.name) }}</td>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro panel_begin(title, extra_class="") %}
+<div class="panel panel-primary {{ extra_class }}">
+    <div class="panel-heading">
+        <h4 class="panel-title">{{title}}</h4>
+    </div>
+    {% endmacro %}
+    {% macro panel_end() %}
+</div>
+{% endmacro %}
+
+
+{% macro accordion_tag(id, label, open) %}
+<div class="panel-group" id="{{id}}">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#{{id}}"
+                    href="#{{id}}_href">{{label}}</a>
+            </h4>
+        </div>
+        {% if open %}
+        <div id="{{id}}_href" class="panel-collapse collapse in">
+            {% else %}
+            <div id="{{id}}_href" class="panel-collapse collapse">
+                {% endif %}
+                <div class="panel-body">
+                    {{ caller() }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endmacro %}
+
+    {% macro render_form_controls() %}
+    <div class="row btn-action">
+        <div class="col-md-12"><button type="submit" class="btn btn-sm btn-primary">{{_("Save")}}</button>
+            {{ lnk_back() }}
+        </div>
+    </div>
+    {% endmacro %}
+
+    {% macro render_list_header(can_add, page, page_size, count, filters, actions, modelview_name) %}
+    {{ render_pagination(page, page_size, count, modelview_name) }}
+    {{ render_set_page_size(page, page_size, count, modelview_name) }}
+    {% if can_add %}
+    {% set path = url_for(modelview_name + '.add') %}
+    {% set path = path | set_link_filters(filters) %}
+    &nbsp;{{ lnk_add(path) }}
+    {% endif %}
+    &nbsp;{{ render_actions(actions, modelview_name) }}
+    &nbsp;{{ lnk_back() }}
+    <div class="pull-right">
+        <strong>{{ _('Record Count') }}:</strong> {{ count }}
+    </div>
+    {% endmacro %}
+
+    {% macro btn_crud(can_show, can_edit, can_delete, pk, modelview_name, filters) %}
+    {% if can_edit %}
+        {% set path = url_for(modelview_name + '.edit',pk=pk) %}
+        {% set path = path | set_link_filters(filters) %}
+        {{ lnk_edit(path) }}
+    {% endif %}
+    {% if can_delete %}
+        {{ lnk_delete(url_for(modelview_name + '.delete',pk=pk)) }}
+    {% endif %}
+    {% endmacro %}
+
+    {% macro btn_search() %}
+    <button type="submit" class="btn  btn-sm btn-primary">{{_("Search")}}
+        <i class="fa fa-search"></i>
+    </button>
+    {% endmacro %}
+
+    {% macro lnk_back() %}
+    <a href="{{url_for('UtilView' + '.back')}}" class="btn btn-sm btn-default">
+        Cancel
+    </a>
+    {% endmacro %}
+
+
+    {% macro lnk_add(my_href) %}
+    <a href="{{my_href}}" class="btn btn-sm btn-primary">
+        <i class="fa fa-plus"></i>
+    </a>
+    {% endmacro %}
+
+    {% macro lnk_edit(my_href) %}
+    <a href="{{my_href}}">
+        <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M14.6051 5.71765L14.1382 4.90758C13.7433 4.22214 12.8681 3.98568 12.1817 4.37898C11.855 4.57145 11.4651 4.62605 11.0981 4.53075C10.7311 4.43545 10.417 4.19808 10.2252 3.87097C10.1018 3.66305 10.0355 3.42623 10.033 3.18447C10.0441 2.79686 9.89787 2.42124 9.62758 2.14319C9.35729 1.86514 8.98596 1.70834 8.59819 1.7085H7.65769C7.27779 1.70849 6.91355 1.85987 6.64556 2.12915C6.37758 2.39842 6.22794 2.76338 6.22977 3.14328C6.21851 3.92763 5.57942 4.55755 4.79499 4.55747C4.55322 4.55496 4.3164 4.48865 4.10849 4.36525C3.42211 3.97195 2.5469 4.20841 2.15197 4.89385L1.65082 5.71765C1.25637 6.40223 1.48961 7.27689 2.17256 7.67417C2.61649 7.93047 2.88996 8.40413 2.88996 8.91673C2.88996 9.42934 2.61649 9.903 2.17256 10.1593C1.49048 10.5539 1.25698 11.4264 1.65082 12.109L2.12451 12.9259C2.30955 13.2598 2.62001 13.5062 2.98721 13.6105C3.3544 13.7149 3.74804 13.6686 4.08103 13.482C4.40837 13.2909 4.79845 13.2386 5.16457 13.3366C5.53068 13.4346 5.84249 13.6747 6.03068 14.0037C6.15408 14.2116 6.22039 14.4484 6.2229 14.6902C6.2229 15.4826 6.86528 16.125 7.65769 16.125H8.59819C9.38792 16.125 10.0292 15.4868 10.033 14.6971C10.0311 14.316 10.1817 13.95 10.4512 13.6805C10.7207 13.411 11.0867 13.2604 11.4678 13.2623C11.7089 13.2687 11.9448 13.3348 12.1543 13.4545C12.8388 13.8489 13.7135 13.6157 14.1108 12.9328L14.6051 12.109C14.7964 11.7806 14.8489 11.3894 14.751 11.0222C14.653 10.655 14.4127 10.342 14.0833 10.1524C13.7539 9.96291 13.5136 9.64987 13.4157 9.28265C13.3177 8.91542 13.3703 8.5243 13.5616 8.19591C13.686 7.97869 13.8661 7.79859 14.0833 7.67417C14.7622 7.27711 14.9949 6.40756 14.6051 5.72451V5.71765Z" stroke="#081721" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="8.13141" cy="8.91669" rx="1.97712" ry="1.97712" stroke="#081721" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </a>
+    {% endmacro %}
+
+    {% macro lnk_show(my_href) %}
+    <li><a href="{{my_href}}">Show</a></li>
+    {% endmacro %}
+
+    {% macro lnk_delete(my_href) %}
+    <a data-text="{{ _('Are you sure you want to delete this item?') }}" data-href="{{my_href}}" class="confirm" data-toggle="modal" data-target="#modal-confirm" href="#">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.75 4.5H16.5V6H15V15.75C15 15.9489 14.921 16.1397 14.7803 16.2803C14.6397 16.421 14.4489 16.5 14.25 16.5H3.75C3.55109 16.5 3.36032 16.421 3.21967 16.2803C3.07902 16.1397 3 15.9489 3 15.75V6H1.5V4.5H5.25V2.25C5.25 2.05109 5.32902 1.86032 5.46967 1.71967C5.61032 1.57902 5.80109 1.5 6 1.5H12C12.1989 1.5 12.3897 1.57902 12.5303 1.71967C12.671 1.86032 12.75 2.05109 12.75 2.25V4.5ZM13.5 6H4.5V15H13.5V6ZM6.75 8.25H8.25V12.75H6.75V8.25ZM9.75 8.25H11.25V12.75H9.75V8.25ZM6.75 3V4.5H11.25V3H6.75Z" fill="black"/>
+        </svg>            
+    </a>
+    {% endmacro %}
+
+    {% macro loading_header() %}
+    <img src="/static/assets/images/loading.gif"
+            style="width: 50px; position: absolute; left: 50%; transform: translate(-50%,-100%)">
+    <span style="position: absolute; left: 50%; transform: translate(-50%,-100%); margin-top: 30px;">Please wait, this might take a while...</span>
+    {% endmacro %}
+
+    {% macro loading() %}
+    <img src="/static/assets/images/loading.gif"
+            style="width: 50px; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-100%)">
+    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-100%); margin-top: 30px;">Please wait, this might take a while...</span>
+    {% endmacro %}

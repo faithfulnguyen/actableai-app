@@ -1,0 +1,81 @@
+{#
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+#}
+{% extends 'appbuilder/init.html' %}
+{% import 'appbuilder/baselib.html' as baselib %}
+{% set menu = appbuilder.menu %}
+{% set WARNING_MSG = appbuilder.app.config.get('WARNING_MSG') %}
+{% set CHAT_BOX_ENABLE = appbuilder.app.config.get('CHAT_BOX_ENABLE') %}
+
+{% block body %}
+    {% include 'appbuilder/general/confirm.html' %}
+    {% include 'appbuilder/general/alert.html' %}
+    <div id="data-bootstrap" data-bootstrap="{{ appbuilder.data_config }}"></div>
+    <div id="data-current_user" data-current_user="{{ current_user.email }}"></div>
+    {% block navbar %}
+        <header class="top" role="header">
+        {% include 'appbuilder/navbar.html' %}
+        </header>
+    {% endblock %}
+
+    {% block uncontained %}{% endblock %}
+
+    <div class="container-fluid">
+      <div id="authProvider"></div>
+      <div id ="js-walkthrough-container"></div>
+      <div class="row custom-layout">
+          <div class="body-content">
+              {% block messages %}
+                {% include 'superset/flash_wrapper.html' %}
+              {% endblock %}
+                {% block content %}
+              {% endblock %}
+          </div>
+      </div>
+    </div>
+    <div class="container-fluid">
+        {% block content_fluid %}
+        {% endblock %}
+    </div>
+    {% if CHAT_BOX_ENABLE == 'true' %}
+        <div class="responsive-embed chat-box">
+            <div class="chat-bar" id='hideshow'>
+                <div class="top-bar">
+                    <div class="name">
+                        <image src="/static/assets/images/icon_chat.png" style="width: 53px; height: 53px; cursor: pointer;" />
+                    </div>
+                </div>
+            </div>
+            <div class="panel chat-panel" style="
+                            max-width: none !important;
+                            width: 100%;
+                            display: block;
+                            height: 50px;
+                            margin-right: 0;
+                            border-top-right-radius: 2px;
+                            border-bottom-right-radius: 2px;
+                            visibility: visible;
+                        ">
+                <button id="hidebutton" style="display: none;">
+                    <i class="fa fa-expand"></i>
+                </button>
+                <iframe class="chat-content" src="/dialogflow/" frameborder="0" width="750" height="0" allowfullscreen></iframe>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

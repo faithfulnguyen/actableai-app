@@ -1,0 +1,86 @@
+.panel {
+  background-color: transparent;
+  border-bottom: none;
+  box-shadow: none;
+}
+
+#add-table .panel-heading {
+  padding: 0;
+  margin: 0 15px;
+}
+
+#add-table .panel-title {
+  font-size: 22px;
+  font-weight: 500;
+}
+
+#add-table .panel-body {
+  margin-top: 30px;
+  padding: 30px 15px;
+  background-color: white;
+}
+
+#add-table .form-group {
+  padding: 10px 10px 20px;
+  margin-bottom: 0;
+}
+
+#add-table label {
+  width: 100%;
+  text-align: right;
+}
+
+.btn-default, .btn-default:hover, .btn-default:focus {
+  padding: 8px 20px;
+  border: none;
+  background-color: transparent;
+  color: white;
+  outline: none;
+}
+
+.btn-blue, .btn-blue:hover, .btn-blue:focus {
+  background-color: #198ace !important;
+}
+
+.btn-cancel, .btn-cancel:hover, .btn-cance-focus {
+  background-color: #f3f3f3 !important;
+  color: #000000;
+}
+
+.mt-15 {
+  margin-top: 15px;
+}
+
+.mr-10 {
+  margin-right: 10px;
+}
+
+.alert-danger {
+  background-color: #f8d7da !important;
+}
+
+.Select-input {
+  height: 36px;
+}
+
+.Select-placeholder, .Select--single > .Select-control .Select-value {
+  line-height: 36px;
+}
+
+.Select-arrow-zone {
+  padding-top: 16px;
+}
+
+.Select-clear-zone {
+  padding-top: 10px;
+}
+
+.btn-warning {
+  padding: 7px 20px;
+  margin-right: 10px;
+}
+
+.btn-blue img {
+  width: 19px;
+  margin: 0 2px;
+}

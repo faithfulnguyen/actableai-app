@@ -1,0 +1,2 @@
+mxnet-cu110==1.8.0.post0
+tensorflow-gpu==2.4.4

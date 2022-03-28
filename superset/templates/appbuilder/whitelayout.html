@@ -1,0 +1,15 @@
+{% extends 'appbuilder/init.html' %}
+{% import 'appbuilder/baselib.html' as baselib %}
+
+{% block body %}
+        {% include 'appbuilder/general/confirm.html' %}
+        {% include 'appbuilder/general/alert.html' %}
+
+    <div class="container-fluid">
+      <div class="row">
+          {% block content %}
+          {% endblock %}
+      </div>
+    </div>
+
+{% endblock %}

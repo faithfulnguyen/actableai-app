@@ -1,0 +1,5 @@
+mxnet==1.7.0.post1
+tensorflow==2.4.1
+torch==1.7.1
+
+

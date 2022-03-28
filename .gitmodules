@@ -1,6 +1,4 @@
-[submodule ".github/actions/cached-dependencies"]
-	path = .github/actions/cached-dependencies
-	url = https://github.com/apache-superset/cached-dependencies.git
 [submodule "actableai-ml"]
 	path = actableai-ml
-	url = git@github.com:Actable-AI/actableai-ml.git
+	url = git@github.com:Actable-AI/actableai-lib.git
+	branch = master

@@ -118,8 +118,8 @@ WORKDIR /app
 RUN mkdir -p /app/dask-worker-space
 RUN chmod 777 -R /app/dask-worker-space && chown -R superset:superset .
 
-COPY ./actableai-ml ./actableai-ml
-ENV PYTHONPATH=/app:/app/actableai-ml:/etc/superset:$PYTHONPATH
+COPY ./actableai-lib ./actableai-lib
+ENV PYTHONPATH=/app:/app/actableai-lib:/etc/superset:$PYTHONPATH
 
 
 #####################################################################

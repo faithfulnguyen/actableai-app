@@ -237,9 +237,9 @@ river==0.8.0
 lightgbm==3.2.1
 
 
-./actableai-ml/third_parties/autogluon/core
-./actableai-ml/third_parties/autogluon/features
-./actableai-ml/third_parties/autogluon/tabular
-./actableai-ml/third_parties/autogluon/mxnet
-./actableai-ml/third_parties/autogluon/text
+./actableai-lib/third_parties/autogluon/core
+./actableai-lib/third_parties/autogluon/features
+./actableai-lib/third_parties/autogluon/tabular
+./actableai-lib/third_parties/autogluon/mxnet
+./actableai-lib/third_parties/autogluon/text
 autogluon-contrib-nlp==0.0.1b20210201

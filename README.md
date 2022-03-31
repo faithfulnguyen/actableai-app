@@ -126,7 +126,7 @@ Open the Debug sidebar and launch the configuration you added in the `launch.jso
 
 Full documentation available here: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 
-Git Submodules is a feature used to contain the actableai-ml library directly in the working directory at specific commit.
+Git Submodules is a feature used to contain the actableai-lib library directly in the working directory at specific commit.
 When cloning for the first time the repository this command should be executed:
 ```shell
 git submodule update --init --recursive
@@ -139,11 +139,11 @@ git pull --recurse-submodules
 
 Finally when the submodule content needs to be updated to a specific commit the following commands must be executed:
 ```shell
-cd actableai-ml
+cd actableai-lib
 git fetch --all
 git checkout <commit_hash>
 cd ..
-git add actableai-ml
+git add actableai-lib
 ```
 
 ----------

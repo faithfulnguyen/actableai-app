@@ -56,14 +56,14 @@ RUN pip install nltk==3.6.2 \
 
 WORKDIR /data
 
-COPY ./actableai-ml/third_parties/autogluon ./actableai-ml/third_parties/autogluon
+COPY ./actableai-lib/third_parties/autogluon ./actableai-lib/third_parties/autogluon
 
 RUN python -c "import nltk; nltk.download('punkt')"
 
 COPY ./requirements-exp.txt ./requirements-exp-gpu.txt ./
 RUN cat requirements-exp.txt requirements-exp-gpu.txt | xargs --max-args=1 --max-procs=8 pip install --disable-pip-version-check --no-deps; exit 0
 
-COPY ./actableai-ml ./actableai-ml
+COPY ./actableai-lib ./actableai-lib
 
-RUN pip install --no-deps ./actableai-ml
+RUN pip install --no-deps ./actableai-lib
 

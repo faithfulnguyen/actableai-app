@@ -1,4 +1,4 @@
-[submodule "actableai-ml"]
-	path = actableai-ml
+[submodule "actableai-lib"]
+	path = actableai-lib
 	url = git@github.com:Actable-AI/actableai-lib.git
 	branch = master

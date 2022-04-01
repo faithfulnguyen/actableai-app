@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-x-superset-build: &superset-build
+x-actableai-build: &actableai-build
   args:
     NPM_BUILD_CMD: build-dev
     NPM_ACTION: install
@@ -25,12 +25,12 @@ x-ray: &ray
   context: ./
   dockerfile: ray.Dockerfile # Please use ray-cpu.Dockerfile if your device doesn't support Nvidia GPU
 
-x-superset-depends-on: &superset-depends-on
+x-actableai-depends-on: &actableai-depends-on
   - ray
   - superset-init
 
-x-superset-volumes:
-  &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+x-actableai-volumes:
+  &actableai-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
   - ./docker:/app/docker
   - ./docker/pythonpath_dev:/app/pythonpath
   - ./superset:/app/superset
@@ -89,8 +89,8 @@ services:
     volumes:
       - db_home:/var/lib/postgresql/data
 
-  superset:
-    build: *superset-build
+  actableai:
+    build: *actableai-build
     command:
       [
         'flask',
@@ -107,21 +107,21 @@ services:
     restart: unless-stopped
     ports:
       - 8088:8088
-    depends_on: *superset-depends-on
-    volumes: *superset-volumes
+    depends_on: *actableai-depends-on
+    volumes: *actableai-volumes
     environment:
       - RAY_ADDRESS=ray://ray:6377
 
-  superset-init:
-    build: *superset-build
+  actableai-init:
+    build: *actableai-build
     command: ['/app/docker/docker-init.sh']
     env_file: docker/.env
     depends_on:
       - db
       - redis
-    volumes: *superset-volumes
+    volumes: *actableai-volumes
 
-  superset-node:
+  actableai-node:
     image: node:10-jessie
     command:
       [
@@ -130,11 +130,11 @@ services:
         'cd /app/superset-frontend && npm install --global webpack webpack-cli && npm install && npm run dev',
       ]
     env_file: docker/.env
-    depends_on: *superset-depends-on
-    volumes: *superset-volumes
+    depends_on: *actableai-depends-on
+    volumes: *actableai-volumes
 
-  superset-worker:
-    build: *superset-build
+  actableai-worker:
+    build: *actableai-build
     command:
       [
           'bash',
@@ -143,16 +143,16 @@ services:
       ]
     env_file: docker/.env
     restart: unless-stopped
-    depends_on: *superset-depends-on
-    volumes: *superset-volumes
+    depends_on: *actableai-depends-on
+    volumes: *actableai-volumes
 
   celery-flower:
-    build: *superset-build
+    build: *actableai-build
     command: ['/usr/bin/docker-bootstrap.sh', 'flower']
     env_file: docker/.env
     restart: unless-stopped
-    depends_on: *superset-depends-on
-    volumes: *superset-volumes
+    depends_on: *actableai-depends-on
+    volumes: *actableai-volumes
     ports:
       - 5555:5555
 

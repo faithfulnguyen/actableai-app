@@ -60,7 +60,7 @@ jobs:
         uses: ./.github/actions/cached-dependencies
         with:
           run: |
-            sudo apt-get install -y bc
+            sudo apt-get install -y bc libmysqlclient-dev
             apt-get-install
             pip-upgrade
             pip install -r requirements/testing.txt

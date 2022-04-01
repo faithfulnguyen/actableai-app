@@ -220,7 +220,8 @@ class TabbedSqlEditors extends React.PureComponent {
     const warning = isFeatureEnabled(FeatureFlag.SQLLAB_BACKEND_PERSISTENCE)
       ? ''
       : `${t(
-          '-- Note: Unless you save your query, these tabs will NOT persist if you clear your cookies or change browsers.',
+          '-- Note: Unless you save your query, these tabs will NOT persist if you clear your cookies or change browsers.\n' +
+          '-- Remember to wrap table names and columns with double quotes, e.g. SELECT "column_1", "column_2" FROM "table_name"' 
         )}\n\n`;
     const qe = {
       title: t('Untitled %s', queryCount),

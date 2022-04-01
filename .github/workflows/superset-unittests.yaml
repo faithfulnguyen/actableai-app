@@ -60,6 +60,7 @@ jobs:
         uses: ./.github/actions/cached-dependencies
         with:
           run: |
+            apt-get install -y bc
             apt-get-install
             pip-upgrade
             pip install -r requirements/testing.txt

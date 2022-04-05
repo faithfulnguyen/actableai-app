@@ -95,6 +95,7 @@ jobs:
 
       - name: Setup Helm remote chart
         run: |
+          helm plugin install https://github.com/hayorov/helm-gcs.git --version 0.3.20
           helm gcs init gs://actableai-charts
           helm repo add actableai gs://actableai-charts
 

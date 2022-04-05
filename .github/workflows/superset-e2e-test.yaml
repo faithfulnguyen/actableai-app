@@ -113,7 +113,7 @@ jobs:
         env:
           IMAGE: actableai/actable
         run: |
-          helm upgrade --timeout 600s --install $HELM_RELEASE_NAME actableai/superset \
+          helm upgrade --timeout 600s --install superset actableai/superset \
           --namespace ${{ env.NAMESPACE }} \
           --values deploy/actableai/test.yaml \
           --set image.repository=europe-west2-docker.pkg.dev/$PROJECT_ID/$IMAGE \

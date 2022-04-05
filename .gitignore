@@ -49,7 +49,6 @@ env36
 local_config.py
 /superset_config.py
 superset.egg-info/
-superset/bin/supersetc
 tmp
 rat-results.txt
 superset/prediction/models

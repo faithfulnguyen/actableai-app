@@ -1155,3 +1155,5 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv,visualstudio,pycharm+all,webstorm+all,vim,emacs,linux,windows,macos,visualstudiocode,node,jupyternotebooks
+deploy/actableai/test.yaml
+deploy/ray/test.yaml

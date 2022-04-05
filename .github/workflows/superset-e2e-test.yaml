@@ -48,9 +48,6 @@ jobs:
           IMAGE: actableai/actable-ray
         run: |-
           docker build \
-          --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-          --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-          --build-arg AWS_DEFAULT_REGION=eu-west-2 \
           --tag "europe-west2-docker.pkg.dev/$PROJECT_ID/$IMAGE:$GITHUB_SHA" -f ray.Dockerfile .
           docker push "europe-west2-docker.pkg.dev/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
 
@@ -96,34 +93,32 @@ jobs:
         run: |
           git secret reveal -f
 
+      - name: Setup Helm remote chart
+        run: |
+          helm gcs init gs://actableai-charts
+          helm repo add actableai gs://actableai-charts
+
       - name: Deploy Ray helm chart
         env:
           IMAGE: actableai/actable-ray
-          HELM_WORKSPACE: ${{ github.workspace }}/helm
-          HELM_RELEASE_NAME: ray
-          HELM_CHART_NAME: ray
         run: |
-          cd $HELM_WORKSPACE
-          helm upgrade --timeout 900s --wait --install $HELM_RELEASE_NAME $HELM_CHART_NAME \
+          helm upgrade --timeout 900s --wait --install ray actableai/ray \
           --namespace ${{ env.NAMESPACE }} \
           --recreate-pods \
-          --values $HELM_CHART_NAME/${{ env.NAMESPACE }}.yaml \
+          --values deploy/ray/test.yaml \
           --set workerImage="europe-west2-docker.pkg.dev/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
 
       - name: Deploy Superset helm chart
         env:
           IMAGE: actableai/actable
-          HELM_WORKSPACE: ${{ github.workspace }}/helm
-          HELM_RELEASE_NAME: superset
-          HELM_CHART_NAME: superset
         run: |
-          cd $HELM_WORKSPACE
           helm dependency update superset
-          helm upgrade --timeout 600s --install $HELM_RELEASE_NAME $HELM_CHART_NAME \
+          helm upgrade --timeout 600s --install $HELM_RELEASE_NAME actableai/superset \
           --namespace ${{ env.NAMESPACE }} \
-          --values $HELM_CHART_NAME/${{ env.NAMESPACE }}.yaml \
+          --values deploy/actableai/test.yaml \
           --set image.repository=europe-west2-docker.pkg.dev/$PROJECT_ID/$IMAGE \
           --set image.tag=$GITHUB_SHA
+
   e2e-uploadFile-test:
     name: E2E Upload File Testing
     needs: deploy
